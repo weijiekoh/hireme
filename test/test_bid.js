@@ -47,7 +47,7 @@ contract('HireMe', accounts => {
     assert.isTrue(result);
   });
 
-  it("creator should not be able to place a bid", async () => {
+  it("The contract creator should not be able to place a bid", async () => {
     let hm = await HireMe.new();
     const result = await expectThrow(hm.bid("email", "organisation", { value: web3.toWei(1, "ether"), from: creator}));
     assert.isTrue(result);
@@ -82,20 +82,6 @@ contract('HireMe', accounts => {
     let hm = await HireMe.new();
     await hm.bid("email", "organisation", { value: web3.toWei(1, "ether"), from: bidder });
     await hm.bid("email", "organisation", { value: web3.toWei(1.01, "ether"), from: bidder2 });
-    expired = await hm.hasExpired();
-    assert.isFalse(expired);
-
-    await increaseTime(expiryDaysBefore);
-
-    expired = await hm.hasExpired();
-    assert.isTrue(expired);
-  });
-
-  it("Auction should expire some time after the third bid", async () => {
-    let hm = await HireMe.new();
-    await hm.bid("email", "organisation", { value: web3.toWei(1, "ether"), from: bidder });
-    await hm.bid("email", "organisation", { value: web3.toWei(1.01, "ether"), from: bidder2 });
-    await hm.bid("email", "organisation", { value: web3.toWei(1.02, "ether"), from: bidder3 });
     expired = await hm.hasExpired();
     assert.isFalse(expired);
 

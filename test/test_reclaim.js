@@ -37,6 +37,18 @@ contract('HireMe', accounts => {
     assert.isTrue(result);
   });
 
+  it("If there is only 1 bidder, reclaim() should not work after expiry", async () => {
+    let hm = await HireMe.new();
+    await hm.bid("email", "organisation", { value: minBid, from: bidder });
+    await increaseTime(expiryDaysBefore);
+
+    let result = await hm.hasExpired();
+    assert.isTrue(result);
+
+    result = await expectThrow(hm.reclaim({ from: bidder }));
+    assert.isTrue(result);
+  });
+
   it("reclaim() should not double-spend", async () => {
     let hm = await HireMe.new();
     const winningBidAmt = minBid * 2;
@@ -53,7 +65,7 @@ contract('HireMe', accounts => {
     assert.isTrue(result2);
   });
 
-  it("reclaim() should return the correct amount of ETH to the winner", async () => {
+  it("reclaim() should return the correct amount of ETH to the winner (2 bids)", async () => {
     let hm = await HireMe.new();
     const winningBidAmt = minBid * 2;
 
@@ -72,6 +84,29 @@ contract('HireMe', accounts => {
 
     const diff = balanceAfter.minus(balanceBefore).plus(gasPaid);
     assert.equal(diff.toNumber(), winningBidAmt - minBid);
+  });
+
+  it("reclaim() should return the correct amount of ETH to the winner (5 bids)", async () => {
+    let hm = await HireMe.new();
+    const winningBidAmt = minBid * 3;
+
+    await hm.bid("email", "organisation", { value: minBid, from: bidder });
+    await hm.bid("email", "organisation", { value: minBid * 1.1, from: bidder2 });
+    await hm.bid("email", "organisation", { value: minBid * 1.2, from: bidder3 });
+    await hm.bid("email", "organisation", { value: winningBidAmt, from: bidder4 });
+
+    const balanceBefore = await web3.eth.getBalance(bidder4);
+
+    await increaseTime(expiryDaysBefore);
+    const transaction = await hm.reclaim({ from: bidder4, gasPrice: gasPrice });
+
+    const balanceAfter = await web3.eth.getBalance(bidder4);
+
+    const gasUsed = web3.toBigNumber(transaction.receipt.gasUsed);
+    const gasPaid = gasUsed.times(gasPrice);
+
+    const diff = balanceAfter.minus(balanceBefore).plus(gasPaid);
+    assert.equal(diff.toNumber(), winningBidAmt - (minBid * 1.2));
   });
 
   it("reclaim() should return the correct amount of ETH to a non-winner who made 2 bids", async () => {

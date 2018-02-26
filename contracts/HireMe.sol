@@ -21,11 +21,12 @@ contract HireMe is Ownable {
 
     Bid[] public bids;
     uint[] public bidIds;
-    uint private minBid = 1 ether;
-    uint private step = 0.01 ether;
-    uint private initialBids = 4;
-    uint private expiryDaysBefore = 7 days;
-    uint private expiryDaysAfter = 3 days;
+    uint private constant minBid = 1 ether;
+    uint private constant step = 0.01 ether;
+    uint private constant initialBids = 4;
+    uint private constant expiryDaysBefore = 7 days;
+    uint private constant expiryDaysAfter = 3 days;
+    string public constant HASHEDSIGNATURE = "";
     // The Internet Archive's ETH donation address
     address public charityAddress = 0x635599b0ab4b5c6B1392e0a2D1d69cF7d1ddDF02;
     mapping (address => uint) public addressToTotalPaid;
@@ -80,7 +81,9 @@ contract HireMe is Ownable {
         // The auction must be over
         require(hasExpired());
 
-        // There must be at least 2 bids
+        // There must be at least 2 bids. Note that if there is only 1 bid and
+        // the auction expires, that bid is the winning bid, and cannot be
+        // reclaimed.
         require(bids.length >= 2);
 
         // The amount and bidder address must be valid
