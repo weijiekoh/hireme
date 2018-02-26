@@ -1,0 +1,9 @@
+beautifulsoup4==4.6.0
+dj-database-url==0.4.2
+Django==2.0.2
+django-htmlmin==0.10.0
+html5lib==1.0.1
+pytz==2018.3
+six==1.11.0
+webencodings==0.5.1
+whitenoise==3.3.1

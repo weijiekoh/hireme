@@ -26,7 +26,7 @@ contract HireMe is Ownable {
     uint private constant initialBids = 4;
     uint private constant expiryDaysBefore = 7 days;
     uint private constant expiryDaysAfter = 3 days;
-    string public constant HASHEDSIGNATURE = "";
+    string public constant AUTHORSIGHASH = "8c8b82a2d83a33cb0f45f5f6b22b45c1955f08fc54e7ab4d9e76fb76843c4918";
     // The Internet Archive's ETH donation address
     address public charityAddress = 0x635599b0ab4b5c6B1392e0a2D1d69cF7d1ddDF02;
     mapping (address => uint) public addressToTotalPaid;
