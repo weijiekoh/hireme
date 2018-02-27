@@ -22,9 +22,9 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "g!x7wup!u^p45^-(lgnz0c4=_p+3ux6tk7$^u)_bq^2b157r37"
+
 if "DJ_SECRET_KEY" in os.environ:
     SECRET_KEY = os.environ["DJ_SECRET_KEY"]
-
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
