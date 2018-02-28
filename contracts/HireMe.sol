@@ -91,15 +91,15 @@ contract HireMe is Ownable {
     }
 
     function donate () public {
+        // donate() can only be called once
+        assert(donated == false);
+
         // Only the contract owner or the charity address may send the funds to
         // charityAddress
         require(msg.sender == owner || msg.sender == charityAddress);
 
         // The auction must be over
         require(hasExpired());
-
-        // donate() can only be called once
-        assert(donated == false);
 
         // There must be at least 1 bid
         assert(bids.length > 0);
@@ -114,8 +114,10 @@ contract HireMe is Ownable {
             _amount = bids[SafeMath.sub(bids.length, 2)].amount;
         }
 
-        charityAddress.transfer(_amount);
+        assert(_amount > 0);
         donated = true;
+
+        charityAddress.transfer(_amount);
         Donated(_amount);
     }
 
