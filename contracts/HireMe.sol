@@ -27,6 +27,7 @@ contract HireMe is Ownable {
     uint private constant EXPIRY_DAYS_BEFORE = 7 days;
     uint private constant EXPIRY_DAYS_AFTER = 3 days;
     string public constant AUTHORSIGHASH = "8c8b82a2d83a33cb0f45f5f6b22b45c1955f08fc54e7ab4d9e76fb76843c4918";
+    bool public donated = false;
     // The Internet Archive's ETH donation address
     address public charityAddress = 0x635599b0ab4b5c6B1392e0a2D1d69cF7d1ddDF02;
     mapping (address => uint) public addressToTotalPaid;
@@ -43,19 +44,19 @@ contract HireMe is Ownable {
         // donation address
         require(_bidder != owner && _bidder != charityAddress);
 
-        // The amount, bidder address, email, and organisation must be neither
-        // 0 nor blank
-        require(_amount > 0);
+        // The bidder address, email, and organisation must valid
         require(_bidder != address(0));
         require(bytes(_email).length > 0);
         require(bytes(_organisation).length > 0);
 
-        // Make sure the amount bid is correct
+        // Make sure the amount bid is more than the rolling minimum
         require(_amount >= calcCurrentMinBid());
 
         // Update the state with the new bid
         bids.push(Bid(true, _id, now, _bidder, _amount, _email, _organisation));
         bidIds.push(_id);
+
+        // Add, not replace, because a bidder may make multiple bids
         addressToTotalPaid[_bidder] = SafeMath.add(addressToTotalPaid[_bidder], _amount);
 
         // Emit the event
@@ -64,8 +65,7 @@ contract HireMe is Ownable {
 
     function reclaim () public {
         // There must be at least 2 bids. Note that if there is only 1 bid and
-        // the auction expires, that bid is the winning bid, and cannot be
-        // reclaimed.
+        // that bid is the winning bid, and cannot be reclaimed.
         require(bids.length >= 2);
 
         address _caller = msg.sender;
@@ -74,9 +74,10 @@ contract HireMe is Ownable {
         // Make sure the amount is more than 0
         require(_amount > 0);
 
+        // Subtract the calculated amount to be reclaimed from the total amount paid
         uint _newTotal = SafeMath.sub(addressToTotalPaid[_caller], _amount);
 
-        // The amount stored in the mapping must not be negative
+        // The amount must not be negative
         assert(_newTotal >= 0);
 
         // Update the state to prevent double-spending
@@ -97,13 +98,16 @@ contract HireMe is Ownable {
         // The auction must be over
         require(hasExpired());
 
+        // donate() can only be called once
+        assert(donated == false);
+
         // There must be at least 1 bid
         assert(bids.length > 0);
 
         // Transfer the winning bid amount to charity
         uint _amount;
         if (bids.length == 1) {
-            // If there is only 1 bid, it is the winner
+            // If there is only 1 bid, transfer that amount
             _amount = bids[0].amount;
         } else {
             // If there is more than 1 bid, transfer the second highest bid
@@ -111,6 +115,7 @@ contract HireMe is Ownable {
         }
 
         charityAddress.transfer(_amount);
+        donated = true;
         Donated(_amount);
     }
 

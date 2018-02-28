@@ -373,4 +373,5 @@ contract('HireMe', accounts => {
     const balanceDiff = afterSecondReclaim.minus(afterSecondBid);
     assert.equal(balanceDiff.plus(gas3).toNumber(), bidDiff.toNumber());
   });
+
 });

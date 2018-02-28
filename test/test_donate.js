@@ -10,6 +10,7 @@ contract('HireMe', accounts => {
   const bidder4 = accounts[4];
   const bidder5 = accounts[5];
   const minBid = web3.toWei(1, "ether");
+  const bid2Amt = web3.toWei(1.1, "ether");
   const days = 60 * 60 * 24;
   const expiryDaysBefore = 7 * days;
   const expiryDaysAfter = 3 * days;
@@ -20,12 +21,34 @@ contract('HireMe', accounts => {
     assert.isTrue(result);
 
     await hm.bid("email", "organisation", { value: minBid, from: bidder });
+    await hm.bid("email", "organisation", { value: bid2Amt, from: bidder2 });
+
     assert.isFalse(await hm.hasExpired());
+
+    result = await expectThrow(hm.donate({ from: creator }));
+    assert.isTrue(result);
+
     await increaseTime(expiryDaysBefore);
     assert.isTrue(await hm.hasExpired());
 
     result = await expectThrow(hm.donate({ from: creator }));
     assert.isFalse(result);
+  });
+
+  it("donate() should not work more than once", async () => {
+    let hm = await HireMe.new();
+
+    await hm.bid("email", "organisation", { value: minBid, from: bidder });
+    await hm.bid("email", "organisation", { value: bid2Amt, from: bidder2 });
+
+    assert.isFalse(await hm.hasExpired());
+    await increaseTime(expiryDaysBefore);
+    assert.isTrue(await hm.hasExpired());
+
+    await hm.donate({ from: creator });
+
+    result = await expectThrow(hm.donate({ from: creator }));
+    assert.isTrue(result);
   });
 
   it("A bidder must not be able to call donate()", async () => {
