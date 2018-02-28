@@ -21,11 +21,11 @@ contract HireMe is Ownable {
 
     Bid[] public bids;
     uint[] public bidIds;
-    uint private constant minBid = 1 ether;
-    uint private constant step = 0.01 ether;
-    uint private constant initialBids = 4;
-    uint private constant expiryDaysBefore = 7 days;
-    uint private constant expiryDaysAfter = 3 days;
+    uint private constant MIN_BID = 1 ether;
+    uint private constant BID_STEP = 0.01 ether;
+    uint private constant INITIAL_BIDS = 4;
+    uint private constant EXPIRY_DAYS_BEFORE = 7 days;
+    uint private constant EXPIRY_DAYS_AFTER = 3 days;
     string public constant AUTHORSIGHASH = "8c8b82a2d83a33cb0f45f5f6b22b45c1955f08fc54e7ab4d9e76fb76843c4918";
     // The Internet Archive's ETH donation address
     address public charityAddress = 0x635599b0ab4b5c6B1392e0a2D1d69cF7d1ddDF02;
@@ -50,20 +50,8 @@ contract HireMe is Ownable {
         require(bytes(_email).length > 0);
         require(bytes(_organisation).length > 0);
 
-        if (bids.length == 0) {
-            // For the first bid, make sure that the amount bid is geq the
-            // minimum bid
-            require(_amount >= minBid);
-        } else {
-            // For subsequent bids, check whether the amount bid
-            // is geq (the previous bid plus the step amount)
-            uint _prevBidId = SafeMath.sub(_id, 1);
-            uint _lastBidAmt = bids[_prevBidId].amount;
-            require(_amount >= SafeMath.add(_lastBidAmt, step));
-
-            // This will not fail if the contract works as expected
-            assert(_amount > minBid);
-        }
+        // Make sure the amount bid is correct
+        require(_amount >= calcCurrentMinBid());
 
         // Update the state with the new bid
         bids.push(Bid(true, _id, now, _bidder, _amount, _email, _organisation));
@@ -75,37 +63,30 @@ contract HireMe is Ownable {
     }
 
     function reclaim () public {
-        address _bidder = msg.sender;
-        uint _amount = addressToTotalPaid[_bidder];
-
-        // The auction must be over
-        require(hasExpired());
-
         // There must be at least 2 bids. Note that if there is only 1 bid and
         // the auction expires, that bid is the winning bid, and cannot be
         // reclaimed.
         require(bids.length >= 2);
 
-        // The amount and bidder address must be valid
+        address _caller = msg.sender;
+        uint _amount = calcAmtReclaimable(_caller);
+
+        // Make sure the amount is more than 0
         require(_amount > 0);
-        require(_bidder != address(0));
+
+        uint _newTotal = SafeMath.sub(addressToTotalPaid[_caller], _amount);
+
+        // The amount stored in the mapping must not be negative
+        assert(_newTotal >= 0);
 
         // Update the state to prevent double-spending
-        addressToTotalPaid[_bidder] = 0;
+        addressToTotalPaid[_caller] = _newTotal;
 
-        // The highest bidder's address is the last item in the bids array
-        address highestBidder = bids[SafeMath.sub(bids.length, 1)].bidder;
-
-        if (_bidder == highestBidder) {
-            // The highest bidder pays the second highest bid
-            uint _secondPrice = bids[SafeMath.sub(bids.length, 2)].amount;
-            _amount = SafeMath.sub(_amount, _secondPrice);
-        }
-
-        _bidder.transfer(_amount);
+        // Make the transfer
+        _caller.transfer(_amount);
 
         // Emit the event
-        Reclaimed(_bidder, _amount);
+        Reclaimed(_caller, _amount);
     }
 
     function donate () public {
@@ -133,6 +114,50 @@ contract HireMe is Ownable {
         Donated(_amount);
     }
 
+    function calcCurrentMinBid () public view returns (uint) {
+        if (bids.length == 0) {
+            return MIN_BID;
+        } else {
+            uint _lastBidId = SafeMath.sub(bids.length, 1);
+            uint _lastBidAmt = bids[_lastBidId].amount;
+            return SafeMath.add(_lastBidAmt, BID_STEP);
+        }
+    }
+
+    function calcAmtReclaimable (address _bidder) public view returns (uint) {
+        // This function calculates the amount that _bidder can get back.
+
+        // A. if the auction is over, and _bidder is the winner, they should
+        // get back the total amount bid minus the second highest bid.
+
+        // B. if the auction is not over, and _bidder is not the winner, they
+        // should get back the total amount bid minus the top bid.
+
+        // C. if the auction is ongoing, and _bidder is the current winner,
+        // they should get back the total amount bid minus the top bid.
+
+        // D. if the auction is ongoing, and _bidder is not the current winner,
+        // they should get back the total amount they had bid.
+
+        uint _totalAmt = addressToTotalPaid[_bidder];
+
+        if (bids[SafeMath.sub(bids.length, 1)].bidder == _bidder) {
+
+            if (hasExpired()) { // scenario A
+                uint _secondPrice = bids[SafeMath.sub(bids.length, 2)].amount;
+
+                return SafeMath.sub(_totalAmt, _secondPrice);
+
+            } else { // scenario C
+                uint _highestPrice = bids[SafeMath.sub(bids.length, 1)].amount;
+                return SafeMath.sub(_totalAmt, _highestPrice);
+            }
+
+        } else { // scenarios B and D
+            return _totalAmt;
+        }
+    }
+
     function getBidIds () public view returns (uint[]) {
         return bidIds;
     }
@@ -149,15 +174,11 @@ contract HireMe is Ownable {
         uint _lastBidTimestamp = bids[SafeMath.sub(_numBids, 1)].timestamp;
 
         // The expiry period depends on how many bids there are.
-        if (_numBids <= initialBids) {
-            // The first *initialBids* bids enjoy a
-            // *expiryDaysBefore* days expiry time
-            return now >= SafeMath.add(_lastBidTimestamp, expiryDaysBefore);
+        if (_numBids <= INITIAL_BIDS) {
+            return now >= SafeMath.add(_lastBidTimestamp, EXPIRY_DAYS_BEFORE);
 
         } else {
-            // The subsequent bids have a
-            // *expiryDaysAfter* days expiry time
-            return now >= SafeMath.add(_lastBidTimestamp, expiryDaysAfter);
+            return now >= SafeMath.add(_lastBidTimestamp, EXPIRY_DAYS_AFTER);
         }
     }
 }
