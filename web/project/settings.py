@@ -32,7 +32,6 @@ DEBUG = False
 if "DEV" in os.environ:
     DEBUG = os.environ["DEV"].lower() == "true"
 
-
 # Application definition
 
 INSTALLED_APPS = [

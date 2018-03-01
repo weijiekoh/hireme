@@ -29,6 +29,10 @@ def bids(request):
 
     path = os.path.join(os.path.dirname(__file__),
                         "../../build/contracts/HireMe.json")
+
+    if not os.path.exists(path):
+        path = os.path.join(os.path.dirname(__file__), "./HireMe.json")
+
     compiled_sol = json.loads(open(path).read())
     contract_interface = compiled_sol
 
