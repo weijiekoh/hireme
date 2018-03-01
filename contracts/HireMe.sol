@@ -28,17 +28,26 @@ contract HireMe is Ownable {
     uint private constant EXPIRY_DAYS_AFTER = 3 days;
     string public constant AUTHORSIGHASH = "8c8b82a2d83a33cb0f45f5f6b22b45c1955f08fc54e7ab4d9e76fb76843c4918";
     bool public donated = false;
+    bool public manuallyEnded = false;
     // The Internet Archive's ETH donation address
     address public charityAddress = 0x635599b0ab4b5c6B1392e0a2D1d69cF7d1ddDF02;
     mapping (address => uint) public addressToTotalPaid;
+
+    // Only the contract owner may end this contract if there are 0 bids.
+    function manuallyEndAuction () public onlyOwner {
+        require(manuallyEnded == false);
+        require(bids.length == 0);
+        manuallyEnded = true;
+    }
 
     function bid(string _email, string _organisation) public payable {
         address _bidder = msg.sender;
         uint _amount = msg.value;
         uint _id = bids.length;
 
-        // The auction must not be over
+        // The auction must not be over or manually ended
         require(!hasExpired());
+        require(!manuallyEnded);
 
         // The bidder must be neither the contract owner nor the charity
         // donation address
@@ -67,6 +76,9 @@ contract HireMe is Ownable {
         // There must be at least 2 bids. Note that if there is only 1 bid and
         // that bid is the winning bid, and cannot be reclaimed.
         require(bids.length >= 2);
+
+        // The auction must not have been manually ended
+        require(!manuallyEnded);
 
         address _caller = msg.sender;
         uint _amount = calcAmtReclaimable(_caller);
@@ -100,6 +112,10 @@ contract HireMe is Ownable {
 
         // The auction must be over
         require(hasExpired());
+
+        // If the auction has been manually ended at this point, the contract
+        // is buggy
+        assert(!manuallyEnded);
 
         // There must be at least 1 bid
         assert(bids.length > 0);
