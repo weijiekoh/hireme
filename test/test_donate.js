@@ -46,7 +46,9 @@ contract('HireMe', accounts => {
     assert.isTrue(await hm.hasExpired());
 
     await hm.donate({ from: creator });
-    await hm.donate({ from: creator });
+
+    result = await expectThrow(hm.donate({ from: creator }));
+    assert.isTrue(result);
 
     result = await expectThrow(hm.donate({ from: creator }));
     assert.isTrue(result);

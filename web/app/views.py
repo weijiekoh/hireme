@@ -52,5 +52,5 @@ def bids(request):
             "amount": bid[4],
             "organisation": bid[6]
         })
-
+    
     return JsonResponse(response)
