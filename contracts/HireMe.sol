@@ -4,7 +4,10 @@ import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 
+// The frontend for this smart contract is a dApp hosted at
+// https://hire.kohweijie.com
 contract HireMe is Ownable {
+    // Data structure representing a single bid
     struct Bid {
         bool exists;         // 0. Whether the bid exists
         uint id;             // 1. The ID of the bid.
@@ -24,8 +27,11 @@ contract HireMe is Ownable {
     uint private constant MIN_BID = 1 ether;
     uint private constant BID_STEP = 0.01 ether;
     uint private constant INITIAL_BIDS = 4;
-    uint private constant EXPIRY_DAYS_BEFORE = 7 days;
-    uint private constant EXPIRY_DAYS_AFTER = 3 days;
+    // TODO: CHANGE TO DAYS
+    uint private constant EXPIRY_DAYS_BEFORE = 3 minutes;
+    uint private constant EXPIRY_DAYS_AFTER = 3 minutes;
+    //uint private constant EXPIRY_DAYS_BEFORE = 7 days;
+    //uint private constant EXPIRY_DAYS_AFTER = 3 days;
     string public constant AUTHORSIGHASH = "8c8b82a2d83a33cb0f45f5f6b22b45c1955f08fc54e7ab4d9e76fb76843c4918";
     bool public donated = false;
     bool public manuallyEnded = false;
@@ -45,9 +51,8 @@ contract HireMe is Ownable {
         uint _amount = msg.value;
         uint _id = bids.length;
 
-        // The auction must not be over or manually ended
-        require(!hasExpired());
-        require(!manuallyEnded);
+        // The auction must not be over
+        require(!hasExpired() && !manuallyEnded);
 
         // The bidder must be neither the contract owner nor the charity
         // donation address
@@ -58,14 +63,15 @@ contract HireMe is Ownable {
         require(bytes(_email).length > 0);
         require(bytes(_organisation).length > 0);
 
-        // Make sure the amount bid is more than the rolling minimum
+        // Make sure the amount bid is more than the rolling minimum bid
         require(_amount >= calcCurrentMinBid());
 
         // Update the state with the new bid
         bids.push(Bid(true, _id, now, _bidder, _amount, _email, _organisation));
         bidIds.push(_id);
 
-        // Add, not replace, because a bidder may make multiple bids
+        // Add, not replace, the state variable which tracks the total amount
+        // paid per address, because a bidder may make multiple bids
         addressToTotalPaid[_bidder] = SafeMath.add(addressToTotalPaid[_bidder], _amount);
 
         // Emit the event
@@ -74,7 +80,7 @@ contract HireMe is Ownable {
 
     function reclaim () public {
         // There must be at least 2 bids. Note that if there is only 1 bid and
-        // that bid is the winning bid, and cannot be reclaimed.
+        // that bid is the winning bid, it cannot be reclaimed.
         require(bids.length >= 2);
 
         // The auction must not have been manually ended
@@ -83,13 +89,14 @@ contract HireMe is Ownable {
         address _caller = msg.sender;
         uint _amount = calcAmtReclaimable(_caller);
 
-        // Make sure the amount is more than 0
+        // Make sure the amount to reclaim is more than 0
         require(_amount > 0);
 
-        // Subtract the calculated amount to be reclaimed from the total amount paid
+        // Subtract the calculated amount to be reclaimed from the state
+        // variable which tracks the total amount paid per address
         uint _newTotal = SafeMath.sub(addressToTotalPaid[_caller], _amount);
 
-        // The amount must not be negative
+        // The amount must not be negative, or the contract is buggy
         assert(_newTotal >= 0);
 
         // Update the state to prevent double-spending
@@ -154,7 +161,7 @@ contract HireMe is Ownable {
         // get back the total amount bid minus the second highest bid.
 
         // B. if the auction is not over, and _bidder is not the winner, they
-        // should get back the total amount bid minus the top bid.
+        // should get back the total they had bid
 
         // C. if the auction is ongoing, and _bidder is the current winner,
         // they should get back the total amount bid minus the top bid.
@@ -164,8 +171,12 @@ contract HireMe is Ownable {
 
         uint _totalAmt = addressToTotalPaid[_bidder];
 
-        if (bids[SafeMath.sub(bids.length, 1)].bidder == _bidder) {
+        if (bids.length == 0) {
+            return 0;
+        }
 
+        if (bids[SafeMath.sub(bids.length, 1)].bidder == _bidder) {
+            // If the bidder is the current winner
             if (hasExpired()) { // scenario A
                 uint _secondPrice = bids[SafeMath.sub(bids.length, 2)].amount;
 
