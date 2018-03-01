@@ -20,7 +20,8 @@ def index(request):
 def bids(request):
     rpc_url = None
     network_name = None
-    if settings.DEBUG:
+
+    if "INFURA_URL" not in os.environ:
         rpc_url = "http://localhost:8545"
         network_name = "5777"
     else:
