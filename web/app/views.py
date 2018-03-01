@@ -27,6 +27,8 @@ def bids(request):
     else:
         rpc_url = os.environ["INFURA_URL"]
         network_name = "1"
+        if "ropsten" in rpc_url:
+            network_name = "3"
 
     path = os.path.join(os.path.dirname(__file__),
                         "../../build/contracts/HireMe.json")
