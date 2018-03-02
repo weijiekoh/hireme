@@ -43,7 +43,11 @@ def bids(request):
                          contract_address,
                          ContractFactoryClass=ConciseContract)
 
-    response = {"bids": []}
+    response = {
+        "bids": [],
+        "expiryTimestamp": cc.expiryTimestamp()
+    }
+
     bidIds = cc.getBidIds()
     for bidId in bidIds:
         bid = cc.bids(bidId)
