@@ -198,23 +198,32 @@ contract HireMe is Ownable {
         return bidIds;
     }
 
+    // Calcuate the timestamp after which the auction will expire
+    function expiryTimestamp () public view returns (uint) {
+        uint _numBids = bids.length;
+
+        // There is no expiry if there are no bids
+        require(_numBids > 0);
+
+        // The timestamp of the most recent bid
+        uint _lastBidTimestamp = bids[SafeMath.sub(_numBids, 1)].timestamp;
+
+        if (_numBids <= INITIAL_BIDS) {
+            return SafeMath.add(_lastBidTimestamp, EXPIRY_DAYS_BEFORE);
+        } else {
+            return SafeMath.add(_lastBidTimestamp, EXPIRY_DAYS_AFTER);
+        }
+    }
+
     function hasExpired () public view returns (bool) {
         uint _numBids = bids.length;
 
         // The auction cannot expire if there are no bids
         if (_numBids == 0) {
             return false;
-        }
-
-        // The timestamp of the most recent bid
-        uint _lastBidTimestamp = bids[SafeMath.sub(_numBids, 1)].timestamp;
-
-        // The expiry period depends on how many bids there are.
-        if (_numBids <= INITIAL_BIDS) {
-            return now >= SafeMath.add(_lastBidTimestamp, EXPIRY_DAYS_BEFORE);
-
         } else {
-            return now >= SafeMath.add(_lastBidTimestamp, EXPIRY_DAYS_AFTER);
+            // Compare with the current time
+            return now >= this.expiryTimestamp();
         }
     }
 }
