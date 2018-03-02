@@ -44,7 +44,7 @@ def bids(request):
                          ContractFactoryClass=ConciseContract)
 
     response = {
-        "time": datetime.datetime.now().timestamp()
+        # "time": datetime.datetime.now().timestamp()
     }
 
     manually_ended = cc.manuallyEnded()
