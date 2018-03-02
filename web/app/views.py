@@ -69,4 +69,7 @@ def bids(request):
         
         if len(bidIds) > 0:
             response["expiryTimestamp"] = cc.expiryTimestamp()
-    return JsonResponse(response)
+
+    r = JsonResponse(response)
+    r["Cache-Control"] = "no-cache"
+    return r
