@@ -26,9 +26,7 @@ def bids(request):
         network_name = "5777"
     else:
         rpc_url = os.environ["INFURA_URL"]
-        network_name = "1"
-        if "ropsten" in rpc_url:
-            network_name = "3"
+        network_name = os.environ["ETH_NETWORK_NAME"]
 
     path = os.path.join(os.path.dirname(__file__),
                         "../../build/contracts/HireMe.json")
