@@ -42,7 +42,9 @@ def bids(request):
                          contract_address,
                          ContractFactoryClass=ConciseContract)
 
-    response = {}
+    response = {
+        "time": datetime.datetime.now().timestamp()
+    }
 
     manually_ended = cc.manuallyEnded()
     if manually_ended:
