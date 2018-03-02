@@ -1,5 +1,5 @@
-var HireMe = artifacts.require("HireMe");
+//var HireMe = artifacts.require("HireMe");
 
-module.exports = function(deployer) {
-  deployer.deploy(HireMe);
-}
+//module.exports = function(deployer) {
+  //deployer.deploy(HireMe);
+//}

@@ -43,23 +43,27 @@ def bids(request):
                          contract_address,
                          ContractFactoryClass=ConciseContract)
 
-    response = {
-        "bids": [],
-        "expiryTimestamp": cc.expiryTimestamp()
-    }
+    response = {}
 
-    bidIds = cc.getBidIds()
-    for bidId in bidIds:
-        bid = cc.bids(bidId)
-        exists = bid[0]
-        assert(exists)
-        assert(bid[1] == bidId)
+    manually_ended = cc.manuallyEnded()
+    if manually_ended:
+        response["manuallyEnded"] = True
+    else:
+        response["expiryTimestamp"] = cc.expiryTimestamp()
+        response["bids"] = []
 
-        response["bids"].append({
-            "timestamp": bid[2],
-            "bidder": bid[3],
-            "amount": bid[4],
-            "organisation": bid[6]
-        })
-    
+        bidIds = cc.getBidIds()
+        for bidId in bidIds:
+            bid = cc.bids(bidId)
+            exists = bid[0]
+            assert(exists)
+            assert(bid[1] == bidId)
+
+            response["bids"].append({
+                "timestamp": bid[2],
+                "bidder": bid[3],
+                "amount": bid[4],
+                "organisation": bid[6]
+            })
+        
     return JsonResponse(response)
