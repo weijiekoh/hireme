@@ -1,5 +1,11 @@
-//var HireMe = artifacts.require("HireMe");
+//var Migrations = artifacts.require("./Migrations.sol");
 
 //module.exports = function(deployer) {
-  //deployer.deploy(HireMe);
-//}
+  //deployer.deploy(Migrations);
+//};
+
+var HireMe = artifacts.require("HireMe");
+
+module.exports = function(deployer) {
+  deployer.deploy(HireMe);
+}

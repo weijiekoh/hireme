@@ -1,16 +1,14 @@
 import os
 import json
-import web3
 
-from django.conf import settings
-
+from web3 import Web3, HTTPProvider
 from web3.contract import ConciseContract
 
+from django.conf import settings
 from django.shortcuts import render
 from project import settings
 from django.http import JsonResponse
 
-from web3 import Web3, HTTPProvider
 
 
 def index(request):
@@ -37,8 +35,9 @@ def bids(request):
     compiled_sol = json.loads(open(path).read())
     contract_interface = compiled_sol
 
-    w3 = Web3(HTTPProvider(rpc_url))
     contract_address = compiled_sol["networks"][network_name]["address"]
+
+    w3 = Web3(HTTPProvider(rpc_url))
     cc = w3.eth.contract(contract_interface['abi'],
                          contract_address,
                          ContractFactoryClass=ConciseContract)
@@ -49,7 +48,6 @@ def bids(request):
     if manually_ended:
         response["manuallyEnded"] = True
     else:
-        response["expiryTimestamp"] = cc.expiryTimestamp()
         response["bids"] = []
 
         bidIds = cc.getBidIds()
@@ -66,4 +64,6 @@ def bids(request):
                 "organisation": bid[6]
             })
         
+        if len(bidIds) > 0:
+            response["expiryTimestamp"] = cc.expiryTimestamp()
     return JsonResponse(response)
