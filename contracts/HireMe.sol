@@ -81,6 +81,9 @@ contract HireMe is Ownable {
     }
 
     function reclaim () public {
+        address _caller = msg.sender;
+        uint _amount = calcAmtReclaimable(_caller);
+
         // There must be at least 2 bids. Note that if there is only 1 bid and
         // that bid is the winning bid, it cannot be reclaimed.
         require(bids.length >= 2);
@@ -88,13 +91,10 @@ contract HireMe is Ownable {
         // The auction must not have been manually ended
         require(!manuallyEnded);
 
-        address _caller = msg.sender;
-        uint _amount = calcAmtReclaimable(_caller);
-
         // Make sure the amount to reclaim is more than 0
         require(_amount > 0);
 
-        // Subtract the calculated amount to be reclaimed from the state
+        // Subtract the amount to be reclaimed, from the state
         // variable which tracks the total amount paid per address
         uint _newTotal = SafeMath.sub(addressToTotalPaid[_caller], _amount);
 
@@ -126,10 +126,10 @@ contract HireMe is Ownable {
         // is buggy
         assert(!manuallyEnded);
 
-        // There must be at least 1 bid
+        // There must be at least 1 bid, or the contract is buggy
         assert(bids.length > 0);
 
-        // Transfer the winning bid amount to charity
+        // Calculate the amount to donate
         uint _amount;
         if (bids.length == 1) {
             // If there is only 1 bid, transfer that amount
@@ -142,6 +142,7 @@ contract HireMe is Ownable {
         assert(_amount > 0);
         donated = true;
 
+        // Transfer the winning bid amount to charity
         charityAddress.transfer(_amount);
         Donated(_amount);
     }
@@ -162,11 +163,12 @@ contract HireMe is Ownable {
         // A. if the auction is over, and _bidder is the winner, they should
         // get back the total amount bid minus the second highest bid.
 
-        // B. if the auction is not over, and _bidder is not the winner, they
-        // should get back the total they had bid
+        // B. if the auction is not over, and _bidder is not the current
+        // winner, they should get back the total they had bid
 
         // C. if the auction is ongoing, and _bidder is the current winner,
-        // they should get back the total amount bid minus the top bid.
+        // they should get back the total amount they had bid minus the top
+        // bid.
 
         // D. if the auction is ongoing, and _bidder is not the current winner,
         // they should get back the total amount they had bid.
@@ -181,7 +183,6 @@ contract HireMe is Ownable {
             // If the bidder is the current winner
             if (hasExpired()) { // scenario A
                 uint _secondPrice = bids[SafeMath.sub(bids.length, 2)].amount;
-
                 return SafeMath.sub(_totalAmt, _secondPrice);
 
             } else { // scenario C
@@ -190,6 +191,7 @@ contract HireMe is Ownable {
             }
 
         } else { // scenarios B and D
+            // If the bidder is not the current winner
             return _totalAmt;
         }
     }
