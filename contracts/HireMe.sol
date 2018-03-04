@@ -33,8 +33,8 @@ contract HireMe is Ownable {
     //uint private constant EXPIRY_DAYS_AFTER = 3 days;
 
     // For development only
-    uint private constant EXPIRY_DAYS_BEFORE = 1 minutes;
-    uint private constant EXPIRY_DAYS_AFTER = 1 minutes;
+    uint private constant EXPIRY_DAYS_BEFORE = 1 hours;
+    uint private constant EXPIRY_DAYS_AFTER = 1 hours;
 
     // SHA256 checksum of https://github.com/weijiekoh/hireme/blob/master/AUTHOR.asc
     // See the bottom of this file for the contents of AUTHOR.asc
