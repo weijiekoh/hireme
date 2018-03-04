@@ -28,11 +28,11 @@ contract HireMe is Ownable {
     uint private constant BID_STEP = 0.01 ether;
     uint private constant INITIAL_BIDS = 4;
 
-    uint private constant EXPIRY_DAYS_BEFORE = 7 days;
-    uint private constant EXPIRY_DAYS_AFTER = 3 days;
+    //uint private constant EXPIRY_DAYS_BEFORE = 7 days;
+    //uint private constant EXPIRY_DAYS_AFTER = 3 days;
 
-    //uint private constant EXPIRY_DAYS_BEFORE = 1 hours;
-    //uint private constant EXPIRY_DAYS_AFTER = 1 hours;
+    uint private constant EXPIRY_DAYS_BEFORE = 5 minutes;
+    uint private constant EXPIRY_DAYS_AFTER = 5 minutes;
 
     string public constant AUTHORSIGHASH = "8c8b82a2d83a33cb0f45f5f6b22b45c1955f08fc54e7ab4d9e76fb76843c4918";
     bool public donated = false;
