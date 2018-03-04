@@ -337,6 +337,9 @@ contract('HireMe', accounts => {
     let diff2 = bidder4BalanceAfter.minus(bidder4BalanceBefore).plus(gasPaid2);
     let amt = web3.toBigNumber(bid5Amt).minus(bid4Amt).toNumber();
     assert.equal(diff2.toNumber(), amt);
+
+    assert.isFalse(await expectThrow(hm.reclaim({ from: bidder2, gasPrice: gasPrice })));
+    assert.isFalse(await expectThrow(hm.reclaim({ from: bidder3, gasPrice: gasPrice })));
   });
 
   it("reclaim() should work correctly in between bids", async () => {
