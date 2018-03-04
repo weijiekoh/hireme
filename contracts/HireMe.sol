@@ -7,8 +7,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 // The frontend for this smart contract is a dApp hosted at
 // https://hire.kohweijie.com
 contract HireMe is Ownable {
-    // Data structure representing a single bid
-    struct Bid {
+    struct Bid { // Data structure representing an individual bid
         bool exists;         // 0. Whether the bid exists
         uint id;             // 1. The ID of the bid.
         uint timestamp;      // 2. The timestamp of when the bid was made
@@ -22,32 +21,47 @@ contract HireMe is Ownable {
     event Reclaimed(address indexed bidder, uint indexed amount);
     event Donated(uint indexed amount);
 
-    Bid[] public bids;
-    uint[] public bidIds;
+    Bid[] public bids; // Array of all bids
+    uint[] public bidIds; // Array of all bid IDs
+
+    // Constants which govern the bid prices and auction duration
     uint private constant MIN_BID = 1 ether;
     uint private constant BID_STEP = 0.01 ether;
     uint private constant INITIAL_BIDS = 4;
-
     uint private constant EXPIRY_DAYS_BEFORE = 7 days;
     uint private constant EXPIRY_DAYS_AFTER = 3 days;
 
+    // For development only
     //uint private constant EXPIRY_DAYS_BEFORE = 5 minutes;
     //uint private constant EXPIRY_DAYS_AFTER = 5 minutes;
 
+    // SHA256 checksum of https://github.com/weijiekoh/hireme/blob/master/AUTHOR.asc
+    // See the bottom of this file for the contents of AUTHOR.asc
     string public constant AUTHORSIGHASH = "8c8b82a2d83a33cb0f45f5f6b22b45c1955f08fc54e7ab4d9e76fb76843c4918";
+
+    // Whether the donate() function has been called
     bool public donated = false;
+
+    // Whether the manuallyEndAuction() function has been called
     bool public manuallyEnded = false;
+
+    // Tracks the total amount of ETH currently residing in the contract
+    // balance per address.
+    mapping (address => uint) public addressBalance;
+
     // The Internet Archive's ETH donation address
     address public charityAddress = 0x635599b0ab4b5c6B1392e0a2D1d69cF7d1ddDF02;
-    mapping (address => uint) public addressToTotalPaid;
 
-    // Only the contract owner may end this contract if there are 0 bids.
+    // Only the contract owner may end this contract, and may do so only if
+    // there are 0 bids.
     function manuallyEndAuction () public onlyOwner {
         require(manuallyEnded == false);
         require(bids.length == 0);
+
         manuallyEnded = true;
     }
 
+    // Place a bid.
     function bid(string _email, string _organisation) public payable {
         address _bidder = msg.sender;
         uint _amount = msg.value;
@@ -72,9 +86,9 @@ contract HireMe is Ownable {
         bids.push(Bid(true, _id, now, _bidder, _amount, _email, _organisation));
         bidIds.push(_id);
 
-        // Add, not replace, the state variable which tracks the total amount
-        // paid per address, because a bidder may make multiple bids
-        addressToTotalPaid[_bidder] = SafeMath.add(addressToTotalPaid[_bidder], _amount);
+        // Add to, not replace, the state variable which tracks the total
+        // amount paid per address, because a bidder may make multiple bids
+        addressBalance[_bidder] = SafeMath.add(addressBalance[_bidder], _amount);
 
         // Emit the event
         BidMade(_id, _bidder, _amount);
@@ -94,15 +108,15 @@ contract HireMe is Ownable {
         // Make sure the amount to reclaim is more than 0
         require(_amount > 0);
 
-        // Subtract the amount to be reclaimed, from the state
-        // variable which tracks the total amount paid per address
-        uint _newTotal = SafeMath.sub(addressToTotalPaid[_caller], _amount);
+        // Subtract the amount to be reclaimed from the state variable which
+        // tracks the total amount paid per address
+        uint _newTotal = SafeMath.sub(addressBalance[_caller], _amount);
 
         // The amount must not be negative, or the contract is buggy
         assert(_newTotal >= 0);
 
         // Update the state to prevent double-spending
-        addressToTotalPaid[_caller] = _newTotal;
+        addressBalance[_caller] = _newTotal;
 
         // Make the transfer
         _caller.transfer(_amount);
@@ -139,7 +153,11 @@ contract HireMe is Ownable {
             _amount = bids[SafeMath.sub(bids.length, 2)].amount;
         }
 
+        // The amount to be donated must be more than 0, or this contract is
+        // buggy
         assert(_amount > 0);
+
+        // Prevent double-donating
         donated = true;
 
         // Transfer the winning bid amount to charity
@@ -173,7 +191,7 @@ contract HireMe is Ownable {
         // D. if the auction is ongoing, and _bidder is not the current winner,
         // they should get back the total amount they had bid.
 
-        uint _totalAmt = addressToTotalPaid[_bidder];
+        uint _totalAmt = addressBalance[_bidder];
 
         if (bids.length == 0) {
             return 0;
@@ -229,3 +247,21 @@ contract HireMe is Ownable {
         }
     }
 }
+
+// AUTHOR.asc (remove the backslashes which preface each line)
+//-----BEGIN PGP SIGNATURE-----
+//
+//iQIzBAABCAAdBQJak6eBFhxjb250YWN0QGtvaHdlaWppZS5jb20ACgkQkNtDYXzM
+//FjKytA/+JF75jH+d/9nEitJKRcsrFgadVjMwNjUt1B7IvoZJqpHj9BSHtKhsVEI5
+//iME24rgbr3YRXLi7GbQS+Ovyf3Ks7BHCA/t12PWOVm9zRBEswojZIg1UjTqtYboS
+//0xrnrY8A71g1RX/jN4uCQ9FohRMAPzTTV9Gt6XDpB9Uzk0HBkUOpVHPnqxSerzbp
+//fSwTCzLgcsTKUJYfeOQMuSwTTXc/btJss82WQpK76xdi5+4hp3tjyZZuY7ruj60N
+//g9f9pHafsWRujMhmX0G8btjK/7/cJL/KbFFafb3sA7Xes0uoUbs+pQXTvuMBx2g5
+//1/BH63aHXdZC2/767JyR18gZN6PnwsZt7i8CowvDcGMni5f0la4O53HCZEGaHYFf
+//IKnJX4LhEJEezcflqSgxm1y7hlUFqC1T7janL0s4rCxoW7iPgNlii62vSzg0TTwH
+//9L6v8aYwWgAwfma2o3XWMCjA/K/BIfWd2w+1ex/gvTVCefOxz1zEPdjhWh89fopb
+//ydxV4fllXLXoB2wmv305E4eryq4lX40w9WxO7Dxq3yU+fmK8BaXLsjUf4fT9AU1m
+//VEo3ndjFXkSELwqTQalxod41j4rYxS6SyxOj6R3/3ejbJIL0kzwKuDlZIkj8Xsfx
+//o2b+QtKANMwC2KRZQBnNdnF2XVOCEFW1XZykWPW6FR1iYS6WEJ0=
+//=J3JJ
+//-----END PGP SIGNATURE-----
