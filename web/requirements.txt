@@ -13,7 +13,7 @@ gunicorn==19.7.1
 html5lib==1.0.1
 idna==2.6
 lru-dict==1.1.6
-psycopg2==2.7.4
+psycopg2-binary==2.7.4
 pysha3==1.0.2
 pytz==2018.3
 requests==2.18.4

@@ -33,8 +33,8 @@ contract HireMe is Ownable {
     //uint private constant EXPIRY_DAYS_AFTER = 3 days;
 
     // For development only
-    uint private constant EXPIRY_DAYS_BEFORE = 1 hours;
-    uint private constant EXPIRY_DAYS_AFTER = 1 hours;
+    uint private constant EXPIRY_DAYS_BEFORE = 5 minutes;
+    uint private constant EXPIRY_DAYS_AFTER = 5 minutes;
 
     // SHA256 checksum of https://github.com/weijiekoh/hireme/blob/master/AUTHOR.asc
     // See the bottom of this file for the contents of AUTHOR.asc
@@ -249,7 +249,11 @@ contract HireMe is Ownable {
     }
 }
 
-// AUTHOR.asc (remove the backslashes which preface each line)
+
+// Contents of AUTHOR.asc and AUTHOR (remove the backslashes which preface each
+// line)
+
+// AUTHOR.asc:
 //-----BEGIN PGP SIGNATURE-----
 //
 //iQIzBAABCAAdBQJak6eBFhxjb250YWN0QGtvaHdlaWppZS5jb20ACgkQkNtDYXzM
@@ -266,3 +270,6 @@ contract HireMe is Ownable {
 //o2b+QtKANMwC2KRZQBnNdnF2XVOCEFW1XZykWPW6FR1iYS6WEJ0=
 //=J3JJ
 //-----END PGP SIGNATURE-----
+
+// AUTHOR:
+//Koh Wei Jie <contact@kohweijie.com>
