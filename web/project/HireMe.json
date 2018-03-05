@@ -8606,6 +8606,11 @@
       "events": {},
       "links": {},
       "address": "0x9a59037bd47877ee6cc0fa3596faf5f49602a635"
+    },
+    "1": {
+      "events": {},
+      "links": {},
+      "address": "0x3D9C230381F3CDC913269668DaC1BB630827df53"
     }
   },
   "schemaVersion": "1.0.1",
