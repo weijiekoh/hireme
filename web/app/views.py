@@ -27,25 +27,15 @@ def bids(request):
         rpc_url = os.environ["INFURA_URL"]
         network_name = os.environ["ETH_NETWORK_NAME"]
 
-    path = os.path.join(os.path.dirname(__file__),
-                        "../../build/contracts/HireMe.json")
-
-    if not os.path.exists(path):
-        path = os.path.join(os.path.dirname(__file__), "./HireMe.json")
-
-    compiled_sol = json.loads(open(path).read())
-    contract_interface = compiled_sol
-
-    contract_address = compiled_sol["networks"][network_name]["address"]
+    contract_interface = settings.CONTRACT_INTERFACE
+    contract_address = contract_interface["networks"][network_name]["address"]
 
     w3 = Web3(HTTPProvider(rpc_url))
     cc = w3.eth.contract(contract_interface['abi'],
                          contract_address,
                          ContractFactoryClass=ConciseContract)
 
-    response = {
-        # "time": datetime.datetime.now().timestamp()
-    }
+    response = {}
 
     manually_ended = cc.manuallyEnded()
     if manually_ended:
