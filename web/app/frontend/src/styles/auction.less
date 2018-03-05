@@ -1,0 +1,105 @@
+.auction{
+    margin-top:2em;
+    margin-bottom:2em;
+
+    .complete{
+        margin-top:2em;
+    }
+
+    table{
+        opacity:1;
+        max-width:100%;
+        width:100%;
+
+        tr.highlight{
+            font-weight:bold;
+        }
+
+        @media (max-width: @medium_screen_width) {
+            th, td{
+                padding: 0.125em 0.25em;
+            }
+        }
+
+        .svg {
+            svg{
+                position:relative;
+                top:4px;
+                left:0.5em;
+
+                path{
+                    fill: @brand-01;
+                }
+            }
+        }
+
+        td.loading_bids,
+        td.no_bids{
+            text-align:center;
+        }
+
+        td.loading_bids .spinner{
+            top:3px;
+        }
+
+        td.address {
+            text-overflow:ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            max-width:100px;
+        }
+    }
+
+    .bidform{
+        margin-top:2em;
+
+        .error {
+            color:@support-01;
+        }
+
+        label{
+            display:block;
+        }
+
+        .reclaimBtn {
+            font-size:0.8em;
+            height:2.5em;
+        }
+
+        .button_container{
+            margin-top:0.5em;
+        }
+
+        input {
+            -webkit-box-shadow: none;
+            box-shadow: none;
+            font-family: 'ibm-plex-sans', Helvetica Neue, Arial, sans-serif;
+            box-sizing: border-box;
+            display: inline-flex;
+            width: 100%;
+            padding-left: 1rem;
+            padding-right: 2rem;
+            font-weight: 300;
+            /*height: 2.5rem;*/
+            /*font-size:0.9em;*/
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid transparent;
+            border-radius: 0;
+            margin-bottom:1em;
+        }
+
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+          -webkit-appearance: none; 
+          -moz-appearance: none; 
+          appearance:none;
+          margin: 0; 
+        }
+
+        input.invalid{
+            border-color:@support-01;
+        }
+
+    }
+}

@@ -1,0 +1,32 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Hire Wei Jie</title>
+        <meta name="viewport" content="width=device-width, initial-scale = 1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta charset="utf-8" />
+
+        {% if not DEBUG %}
+            <link rel="stylesheet" href="{% static "/app.css" %}" />
+        {% endif %}
+
+        <meta property="og:url" content="https://hire.kohweijie.com/" />
+        <meta property="og:title" content="I'm up for auction on the blockchain." />
+        <meta property="og:description"
+            content="If you're hiring a developer, bid for me today." />
+
+    </head>
+	<body>
+        <noscript><p>This page requires Javascript.</p></noscript>
+
+        <div class="ibm ibm-type-e" id="app"></div>
+
+        {% if DEBUG %}
+            <script type="text/javascript" src="http://0.0.0.0:7070/app.js"></script>
+        {% else %}
+            <script type="text/javascript" src="/static/app.js"></script>
+        {% endif %}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-114927974-1"></script>
+        <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'UA-114927974-1');</script>
+    </body>
+</html>
+

@@ -1,0 +1,203 @@
+@import (once, css) "../../node_modules/purecss/build/pure-min.css";
+@import (once, css) "../../node_modules/purecss/build/grids-responsive.css";
+@import (once, css) "../../node_modules/@ibm/type/css/ibm-type.min.css";
+@import (once, less) "./colours.less";
+@import (once, less) "./spinner.less";
+@import (once, less) "./constants.less";
+@import (once, less) "./auction.less";
+
+* {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+    background-color: @ui-02;
+    color:white;
+}
+
+a { 
+    color: @brand-01;
+    text-decoration:none;
+    &:hover{
+        cursor:pointer;
+    }
+}
+
+h1 {
+    font-weight:normal;
+    @media (max-width: @medium_screen_width) {
+        line-height:1em;
+    }
+}
+
+pre {
+    font-family: 'IBM Plex Mono';
+    display:inline;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+}
+
+button{
+    background-color: @brand-01;
+    border-width: 2px;
+    border-style: solid;
+    border-color: transparent;
+    color: @ui-03;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1em;
+    font-weight: 700;
+    height: 3.5rem;
+    padding: 0 1rem;
+    border-radius: 0;
+    text-align: center;
+    text-decoration: none;
+    transition-duration: 250ms;
+    transition-timing-function: ease-in;
+    white-space: nowrap;
+    line-height: 16px;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    &:disabled{
+        cursor: not-allowed;
+        opacity: 0.5;
+        &:hover{
+            background-color: @brand-01;
+        }
+    }
+
+    &:hover{
+        background-color:@brand-02;
+    }
+
+    &:active{
+        background-color: #0777e7;
+        border-width: 2px;
+        border-style: solid;
+        border-color: transparent;
+    }
+    &:focus {
+        background-color:@brand-02;
+        border: 2px solid #20343e;
+        outline: 2px solid #7cc7ff;
+    }
+}
+
+button.secondary {
+    background-color: transparent;
+    border-width: 2px;
+    border-style: solid;
+    border-color: @brand-01;
+    color: @brand-01;
+
+    &:hover{
+        color: @ui-03;
+        background-color: @brand-01;
+
+    }
+    &:focus {
+        background-color: @brand-01;
+        border: 2px solid @ui-04;
+        outline: 2px solid @support-04;
+    }
+}
+
+.pure-table{
+    font-size:0.875em;
+    thead {
+        color:white;
+        background-color:@ui-01;
+    }
+
+    th, td {
+        border-left:none;
+        border-right:none;
+    }
+}
+
+table {
+    th {
+        background-color:@ui-01;
+    }
+
+    tr {
+        border: none;
+        &:nth-of-type(even) {
+            background-color:@ui-01;
+        }
+        &:nth-of-type(odd) {
+            background-color:@ui-02;
+        }
+    }
+
+    @media (min-width: @large_screen_width) {
+        max-width:606px;
+    }
+}
+
+#app {
+    padding-left:1em;
+    padding-right:1em;
+    box-sizing:border-box;
+    margin-left:auto;
+    margin-right:auto;
+    @media (min-width: @large_screen_width) {
+        max-width: calc(688px + -.24242 * (100vw - 1056px))
+    }
+
+    @media (max-width: @small_screen_width) {
+        margin-left:0.5em;
+        margin-right:0.5em;
+    }
+}
+
+.box{
+    display:block;
+    margin-bottom:3em;
+
+    @media (max-width: @small_screen_width) {
+        margin-bottom:1em;
+    }
+}
+
+.section_header {
+    margin-top:2em;
+}
+
+.make_bid{
+    margin-top:2em;
+    margin-bottom:2em;
+
+    p:first-of-type{
+        margin-top:0;
+    }
+}
+
+.button_container{
+    text-align:right;
+}
+
+.faq {
+    em {
+        font-weight:bold;
+    }
+
+    p em{
+        font-weight:normal;
+    }
+}
